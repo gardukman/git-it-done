@@ -4,10 +4,19 @@ var getUserRepos = function (user) {
     var apiUrl = "https://api.github.com/users/" + user + "/repos";
     // make a request to the url
     fetch(apiUrl).then(function (response) {
-        // when the response data is converted to JSON it will be sent from getUserRepos to displayRepos
-        response.json().then(function (data) {
-            displayRepos(data, user);
-        });
+        // on a successful request the response data is converted to JSON it will be sent from getUserRepos to displayRepos
+        if (response.ok) {
+            response.json().then(function (data) {
+
+                displayRepos(data, user);
+            });
+        } else {
+            alert("Error: " + response.statusText);
+        }
+    })
+    // lets user know if errors occur or connectivity issues arise
+    .catch(function(error) {
+        alert("Unable to connect to GitHub");
     });
 };
 
@@ -23,7 +32,7 @@ var userFormEl = document.querySelector("#user-form");
 var nameInputEl = document.querySelector("#username");
 
 // prevents the page from refreshing when the button is clicked
-var formSubmitHandler = function(event) {
+var formSubmitHandler = function (event) {
     event.preventDefault();
     // get value from input element
     var username = nameInputEl.value.trim();
@@ -34,14 +43,19 @@ var formSubmitHandler = function(event) {
     } else {
         alert("Please enter a GitHub username");
     }
-    
+
 };
 
 // the event listener takes the "user-form" when submitted 
 userFormEl.addEventListener("submit", formSubmitHandler);
 
 // this function is called displayRepos
-var displayRepos = function(repos, searchTerm) {
+var displayRepos = function (repos, searchTerm) {
+    // check if api returned any repos
+    if (repos.length === 0) {
+        repoContainerEl.textContent = "No repositories found.";
+        return
+    }
     // takes the data from the repoContainerEl var and puts it into a string
     repoContainerEl.textContent = "";
     // takes the data from the repoSearchTerm var
@@ -51,7 +65,7 @@ var displayRepos = function(repos, searchTerm) {
     for (var i = 0; i < repos.length; i++) {
         // format repo name - format the appearance of the name and repo name
         var repoName = repos[i].owner.login + "/" + repos[i].name;
-        
+
         // create a <div> container for each repo
         var repoEl = document.createElement("div");
         // sets the repos class 
